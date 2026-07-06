@@ -11,7 +11,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
-from app.api import health
+from app.api import health, chat
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -33,3 +33,4 @@ app.add_middleware(
 # Registro de rotas: cada "domínio" da aplicação (health, chat, memória...)
 # terá seu próprio router, mantendo main.py limpo e organizado.
 app.include_router(health.router, prefix="/api", tags=["Health"])
+app.include_router(chat.router, prefix="/api", tags=["Chat"])
