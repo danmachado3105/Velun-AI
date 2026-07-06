@@ -64,6 +64,34 @@ class ConversationService:
 
         return self.repository.get_conversation(conversation_id)
 
+    async def send_message_stream(self, conversation_id: str, content: str):
+        """
+        Envia uma mensagem do usuário e transmite a resposta da IA
+        em pedaços, à medida que ela é gerada (streaming).
+
+        Ao final, salva a resposta completa no banco, assim como
+        já fazemos na versão sem streaming.
+        """
+        self.repository.add_message(
+            conversation_id=conversation_id, role="user", content=content
+        )
+
+        conversation = self.repository.get_conversation(conversation_id)
+        history = [
+            {"role": message.role, "content": message.content}
+            for message in conversation.messages
+        ]
+        messages_with_system = [{"role": "system", "content": SYSTEM_PROMPT}] + history
+
+        full_response = ""
+        async for chunk in self.llm_provider.generate_stream(messages_with_system):
+            full_response += chunk
+            yield chunk
+
+        self.repository.add_message(
+            conversation_id=conversation_id, role="assistant", content=full_response
+        )    
+
     def delete_conversation(self, conversation_id: str) -> None:
         """Apaga uma conversa inteira."""
         self.repository.delete_conversation(conversation_id)

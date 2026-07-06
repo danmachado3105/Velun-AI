@@ -24,7 +24,11 @@ app = FastAPI(
 # as origens permitidas — por enquanto, liberamos para desenvolvimento local.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # porta padrão do Vite (React)
+    allow_origins=[
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://localhost:5175",
+],  # porta padrão do Vite (React)
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

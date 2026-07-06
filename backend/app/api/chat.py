@@ -4,7 +4,7 @@ Rotas relacionadas a conversas (chats).
 Aqui ficam as "portas de entrada" que o frontend vai chamar para
 criar conversas, listar o histórico e enviar mensagens.
 """
-
+from sse_starlette.sse import EventSourceResponse
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.infrastructure.llm.ollama_provider import OllamaProvider
@@ -86,3 +86,24 @@ def delete_conversation(
         raise HTTPException(status_code=404, detail="Conversa não encontrada.")
 
     service.delete_conversation(conversation_id)
+
+@router.post("/conversations/{conversation_id}/messages/stream")
+async def send_message_stream(
+    conversation_id: str,
+    payload: SendMessageRequest,
+    service: ConversationService = Depends(get_conversation_service),
+):
+    """
+    Envia uma mensagem e transmite a resposta da IA em tempo real,
+    pedaço por pedaço (streaming via Server-Sent Events).
+    """
+    conversation = service.get_conversation(conversation_id)
+    if conversation is None:
+        raise HTTPException(status_code=404, detail="Conversa não encontrada.")
+
+    async def event_generator():
+        async for chunk in service.send_message_stream(conversation_id, payload.content):
+            yield {"event": "message", "data": chunk}
+        yield {"event": "done", "data": ""}
+
+    return EventSourceResponse(event_generator())
