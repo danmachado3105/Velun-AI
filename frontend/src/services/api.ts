@@ -70,23 +70,38 @@ export async function sendMessageStream(
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
 
+  // Guarda pedaços de texto que ainda não formam uma linha completa,
+  // até a próxima leitura chegar e "completar" o que faltava.
+  let buffer = "";
+
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
 
-    const text = decoder.decode(value);
-    // O formato SSE manda linhas tipo "data: algum texto".
-    // Extraímos só o conteúdo depois de "data: ".
-    const lines = text.split("\n").filter((line) => line.startsWith("data:"));
-    for (const line of lines) {
-      // Removemos apenas o prefixo "data: " (com o espaço logo depois dos dois pontos),
-      // sem usar trim() no restante — isso preserva os espaços entre as palavras
-      // que a IA está enviando aos poucos.
-      const chunkContent = line.startsWith("data: ")
-        ? line.slice(6)
-        : line.slice(5);
-      if (chunkContent) {
-        onChunk(chunkContent);
+    // "stream: true" garante que caracteres acentuados não fiquem
+    // corrompidos quando cortados no meio por um pacote de rede.
+    buffer += decoder.decode(value, { stream: true });
+
+    // Cada evento SSE termina com uma linha em branco. Aceitamos tanto
+    // "\n\n" quanto "\r\n\r\n" (formato usado por diferentes servidores),
+    // para garantir que os eventos sejam sempre reconhecidos corretamente.
+    const events = buffer.split(/\r\n\r\n|\n\n/);
+    buffer = events.pop() ?? "";
+
+    for (const rawEvent of events) {
+      if (!rawEvent.trim()) continue;
+
+      const lines = rawEvent.split(/\r\n|\n/);
+
+      // Um mesmo pedaço de texto pode vir dividido em várias linhas "data:",
+      // quando ele contém quebras de linha. Juntamos todas com "\n" entre
+      // elas, para não perder a quebra de linha original.
+      const dataLines = lines
+        .filter((line) => line.startsWith("data:"))
+        .map((line) => (line.startsWith("data: ") ? line.slice(6) : line.slice(5)));
+
+      if (dataLines.length > 0) {
+        onChunk(dataLines.join("\n"));
       }
     }
   }
