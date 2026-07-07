@@ -4,6 +4,11 @@ Rotas relacionadas a conversas (chats).
 Aqui ficam as "portas de entrada" que o frontend vai chamar para
 criar conversas, listar o histórico e enviar mensagens.
 """
+
+from fastapi import UploadFile, File
+from app.infrastructure.files.text_extractor import TextExtractor, UnsupportedFileTypeError
+from app.api.schemas.chat import UploadFileResponse
+
 from sse_starlette.sse import EventSourceResponse
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -112,3 +117,37 @@ async def send_message_stream(
         yield {"event": "done", "data": ""}
 
     return EventSourceResponse(event_generator())
+
+@router.post("/conversations/{conversation_id}/upload", response_model=UploadFileResponse)
+async def upload_file(
+    conversation_id: str,
+    file: UploadFile = File(...),
+    service: ConversationService = Depends(get_conversation_service),
+):
+    """
+    Recebe um arquivo, extrai seu texto e salva como uma mensagem
+    do usuário na conversa (marcando que veio de um arquivo).
+    """
+    conversation = service.get_conversation(conversation_id)
+    if conversation is None:
+        raise HTTPException(status_code=404, detail="Conversa não encontrada.")
+
+    file_bytes = await file.read()
+    extractor = TextExtractor()
+
+    try:
+        extracted_text = extractor.extract(file.filename, file_bytes)
+    except UnsupportedFileTypeError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    if not extracted_text.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Não foi possível extrair texto deste arquivo.",
+        )
+
+    return UploadFileResponse(
+        filename=file.filename,
+        extracted_text=extracted_text,
+        character_count=len(extracted_text),
+    )

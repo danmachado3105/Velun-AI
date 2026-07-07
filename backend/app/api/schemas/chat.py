@@ -36,3 +36,9 @@ class ConversationResponse(BaseModel):
 class SendMessageRequest(BaseModel):
     """O que o frontend precisa enviar para mandar uma mensagem."""
     content: str = Field(min_length=1, description="Texto da mensagem do usuário")
+
+class UploadFileResponse(BaseModel):
+    """Resposta ao processar um arquivo enviado."""
+    filename: str
+    extracted_text: str
+    character_count: int
