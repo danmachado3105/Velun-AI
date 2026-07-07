@@ -185,3 +185,5 @@ backend/.env
 backend/velun.db
 __pycache__/
 *.pyc
+
+backend/chroma_data/

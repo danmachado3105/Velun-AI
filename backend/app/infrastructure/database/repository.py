@@ -50,6 +50,13 @@ class ConversationRepository:
         self.db.refresh(message)
         return message
 
+    def update_title(self, conversation_id: str, title: str) -> None:
+        """Atualiza o título de uma conversa."""
+        conversation = self.get_conversation(conversation_id)
+        if conversation:
+            conversation.title = title
+            self.db.commit()
+
     def delete_conversation(self, conversation_id: str) -> None:
         """Apaga uma conversa (e suas mensagens, por causa do cascade)."""
         conversation = self.get_conversation(conversation_id)

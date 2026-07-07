@@ -23,3 +23,12 @@ SYSTEM_PROMPT = """Você é o Velun AI, um assistente de inteligência artificia
 - Quando a pergunta envolver código, formate em blocos de código bem organizados.
 - Priorize ser útil e prático nas respostas.
 """
+
+MEMORY_EXTRACTION_PROMPT = """Analise a mensagem do usuário abaixo e identifique se ela contém alguuma informação pessoal importante que vale a pena lembrar para conversas futuras (preferências, projetos, fatos sobre a vida do usuário, nomes importantes, etc).
+
+Se houver algo relevante, responda APENAS com uma frase curta e objetiva resumindo o fato (em terceira pessoa, ex: "O usuário trabalha como programador").
+
+Se não houver nada relevante (é apenas uma pergunta comum, conversa casual, ou pedido técnico sem informação pessoal), responda APENAS com a palavra: NADA
+
+Mensagem do usuário: "{message}"
+"""

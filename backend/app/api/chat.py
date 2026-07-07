@@ -8,6 +8,9 @@ from sse_starlette.sse import EventSourceResponse
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.infrastructure.llm.ollama_provider import OllamaProvider
+from app.infrastructure.memory.embedding_provider import OllamaEmbeddingProvider
+from app.infrastructure.memory.memory_repository import MemoryRepository
+from app.application.services.memory_service import MemoryService
 
 from app.infrastructure.database.session import get_db
 from app.infrastructure.database.repository import ConversationRepository
@@ -20,13 +23,15 @@ router = APIRouter()
 def get_conversation_service(db: Session = Depends(get_db)) -> ConversationService:
     """
     Monta o serviço de conversas com tudo que ele precisa.
-
-    O FastAPI chama essa função automaticamente antes de cada rota,
-    entregando uma sessão de banco (get_db) já pronta para uso.
     """
     repository = ConversationRepository(db)
     llm_provider = OllamaProvider()
-    return ConversationService(repository, llm_provider)
+
+    embedding_provider = OllamaEmbeddingProvider()
+    memory_repository = MemoryRepository(embedding_provider)
+    memory_service = MemoryService(memory_repository, llm_provider)
+
+    return ConversationService(repository, llm_provider, memory_service)
 
 
 @router.post("/conversations", response_model=ConversationResponse)
