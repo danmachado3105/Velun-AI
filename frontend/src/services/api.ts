@@ -106,3 +106,29 @@ export async function sendMessageStream(
     }
   }
 }
+
+/**
+ * Envia um arquivo para extração de texto (PDF, Word, .txt, .md).
+ */
+export async function uploadFile(
+  conversationId: string,
+  file: File
+): Promise<{ filename: string; extracted_text: string; character_count: number }> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(
+    `${API_BASE_URL}/conversations/${conversationId}/upload`,
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    throw new Error(errorData?.detail || "Erro ao enviar arquivo.");
+  }
+
+  return response.json();
+}
