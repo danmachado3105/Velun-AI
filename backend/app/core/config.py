@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     OLLAMA_BASE_URL: str = "http://localhost:11434"
     OLLAMA_MODEL: str = "qwen2.5:3b"
     OLLAMA_EMBEDDING_MODEL: str = "nomic-embed-text"
+    OLLAMA_VISION_MODEL: str = "qwen2.5vl:3b"
 
     # --- Banco de dados ---
     DATABASE_URL: str = "sqlite:///./velun.db"
