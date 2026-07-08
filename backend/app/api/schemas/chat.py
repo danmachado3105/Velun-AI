@@ -42,3 +42,11 @@ class UploadFileResponse(BaseModel):
     filename: str
     extracted_text: str
     character_count: int
+
+class DocumentResponse(BaseModel):
+    """Como um documento anexado aparece na API."""
+    id: str
+    filename: str
+    created_at: datetime
+
+    model_config = {"from_attributes": True}

@@ -62,3 +62,14 @@ class MessageModel(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
 
     conversation: Mapped["ConversationModel"] = relationship(back_populates="messages")
+
+class DocumentModel(Base):
+    """Representa um arquivo anexado a uma conversa (texto extraído)."""
+
+    __tablename__ = "documents"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_id)
+    conversation_id: Mapped[str] = mapped_column(ForeignKey("conversations.id"))
+    filename: Mapped[str] = mapped_column(String(255))
+    content: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)

@@ -144,7 +144,7 @@ export function useConversation() {
         setIsSending(false);
       }
     },
-    [activeId]
+    [activeId, pendingAttachment]
   );
 
   const handleFileSelected = useCallback(
