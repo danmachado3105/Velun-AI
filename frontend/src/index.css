@@ -1,2 +1,37 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
+
+@theme {
+  --font-display: "Space Grotesk", sans-serif;
+  --font-sans: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  --color-aurora-blue: #4F7CFF;
+  --color-aurora-violet: #9D5CFF;
+  --color-aurora-green: #3DDC97;
+}
+
+:root {
+  --bg-primary: #FAFAFA;
+  --bg-secondary: #F0F0F2;
+  --text-primary: #1A1D23;
+  --border-color: #E2E2E5;
+}
+
+.dark {
+  --bg-primary: #0B0E14;
+  --bg-secondary: #151A24;
+  --text-primary: #E8EAED;
+  --border-color: #262B38;
+}
+
+.aurora-gradient {
+  background: linear-gradient(135deg, var(--color-aurora-blue), var(--color-aurora-violet), var(--color-aurora-green));
+}
+
+.aurora-text {
+  background: linear-gradient(135deg, var(--color-aurora-blue), var(--color-aurora-violet));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
