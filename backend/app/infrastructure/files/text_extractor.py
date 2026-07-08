@@ -27,15 +27,17 @@ class TextExtractor:
         extension = self._get_extension(filename)
 
         if extension == ".pdf":
-            return self._extract_from_pdf(file_bytes)
+            text = self._extract_from_pdf(file_bytes)
         elif extension == ".docx":
-            return self._extract_from_docx(file_bytes)
+            text = self._extract_from_docx(file_bytes)
         elif extension in (".txt", ".md"):
-            return file_bytes.decode("utf-8", errors="ignore")
+            text = file_bytes.decode("utf-8", errors="ignore")
         else:
             raise UnsupportedFileTypeError(
                 f"Tipo de arquivo não suportado: {extension}"
             )
+
+        return self._truncate_if_needed(text)
 
     def _get_extension(self, filename: str) -> str:
         """Extrai a extensão do arquivo (ex: '.pdf'), em minúsculas."""
@@ -53,3 +55,21 @@ class TextExtractor:
         document = Document(io.BytesIO(file_bytes))
         paragraphs = [paragraph.text for paragraph in document.paragraphs]
         return "\n".join(paragraphs)
+
+    MAX_CHARACTERS = 8000  # limite de segurança para não sobrecarregar o modelo local
+
+    def _truncate_if_needed(self, text: str) -> str:
+        """
+        Limita o tamanho do texto extraído, para evitar sobrecarregar
+        o modelo local (que roda no seu próprio computador, com
+        recursos limitados de CPU/GPU).
+        """
+        if len(text) <= self.MAX_CHARACTERS:
+            return text
+
+        truncated = text[: self.MAX_CHARACTERS]
+        return (
+            truncated
+            + "\n\n[... Texto truncado por limite de tamanho. "
+            + f"O documento tem {len(text)} caracteres no total ...]"
+        )

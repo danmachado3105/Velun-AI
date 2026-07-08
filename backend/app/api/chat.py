@@ -5,6 +5,9 @@ Aqui ficam as "portas de entrada" que o frontend vai chamar para
 criar conversas, listar o histórico e enviar mensagens.
 """
 
+from app.infrastructure.database.document_repository import DocumentRepository
+from app.api.schemas.chat import DocumentResponse
+
 from fastapi import UploadFile, File
 from app.infrastructure.files.text_extractor import TextExtractor, UnsupportedFileTypeError
 from app.api.schemas.chat import UploadFileResponse
@@ -118,15 +121,16 @@ async def send_message_stream(
 
     return EventSourceResponse(event_generator())
 
-@router.post("/conversations/{conversation_id}/upload", response_model=UploadFileResponse)
+@router.post("/conversations/{conversation_id}/upload", response_model=DocumentResponse)
 async def upload_file(
     conversation_id: str,
     file: UploadFile = File(...),
+    db: Session = Depends(get_db),
     service: ConversationService = Depends(get_conversation_service),
 ):
     """
-    Recebe um arquivo, extrai seu texto e salva como uma mensagem
-    do usuário na conversa (marcando que veio de um arquivo).
+    Recebe um arquivo, extrai seu texto e salva como um documento
+    anexado à conversa (separado do histórico de mensagens).
     """
     conversation = service.get_conversation(conversation_id)
     if conversation is None:
@@ -146,8 +150,10 @@ async def upload_file(
             detail="Não foi possível extrair texto deste arquivo.",
         )
 
-    return UploadFileResponse(
+    document_repository = DocumentRepository(db)
+    document = document_repository.add_document(
+        conversation_id=conversation_id,
         filename=file.filename,
-        extracted_text=extracted_text,
-        character_count=len(extracted_text),
+        content=extracted_text,
     )
+    return document
