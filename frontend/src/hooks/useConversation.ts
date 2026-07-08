@@ -82,15 +82,11 @@ export function useConversation() {
     async (content: string) => {
       if (!activeId) return;
 
-      // Se houver um arquivo anexado pendente, monta o conteúdo real
-      // (enviado para a IA) juntando o texto do arquivo com a mensagem,
-      // mas a mensagem exibida na tela mostra só um resumo do anexo.
+      // O documento já foi salvo no backend durante o upload; aqui só
+      // precisamos indicar visualmente que ele foi anexado a esta mensagem.
       const hasAttachment = pendingAttachment !== null;
       const displayContent = hasAttachment
         ? `📎 ${pendingAttachment!.filename}${content ? `\n\n${content}` : ""}`
-        : content;
-      const fullContentForAI = hasAttachment
-        ? `Arquivo anexado: ${pendingAttachment!.filename}\n\n${pendingAttachment!.content}${content ? `\n\n${content}` : ""}`
         : content;
 
       setPendingAttachment(null);
@@ -122,7 +118,7 @@ export function useConversation() {
       setError(null);
 
       try {
-        await sendMessageStream(activeId, fullContentForAI, (chunk) => {
+        await sendMessageStream(activeId, content, (chunk) => {
           setConversations((prev) =>
             prev.map((c) =>
               c.id === activeId
@@ -158,7 +154,7 @@ export function useConversation() {
         const result = await uploadFile(activeId, file);
         setPendingAttachment({
           filename: result.filename,
-          content: result.extracted_text,
+          content: "",
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Erro ao processar arquivo.");

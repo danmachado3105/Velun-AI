@@ -39,7 +39,9 @@ def get_conversation_service(db: Session = Depends(get_db)) -> ConversationServi
     memory_repository = MemoryRepository(embedding_provider)
     memory_service = MemoryService(memory_repository, llm_provider)
 
-    return ConversationService(repository, llm_provider, memory_service)
+    document_repository = DocumentRepository(db)
+
+    return ConversationService(repository, llm_provider, memory_service, document_repository)
 
 
 @router.post("/conversations", response_model=ConversationResponse)

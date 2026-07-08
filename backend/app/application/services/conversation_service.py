@@ -6,6 +6,7 @@ adicionar mensagem, apagar) e agora também orquestra a chamada à IA
 para gerar respostas.
 """
 
+from app.infrastructure.database.document_repository import DocumentRepository
 from app.application.services.memory_service import MemoryService
 from app.core.prompts import SYSTEM_PROMPT
 from app.infrastructure.database.repository import ConversationRepository
@@ -34,10 +35,27 @@ class ConversationService:
         repository: ConversationRepository,
         llm_provider: LLMProvider,
         memory_service: MemoryService,
+        document_repository: DocumentRepository,
     ):
         self.repository = repository
         self.llm_provider = llm_provider
         self.memory_service = memory_service
+        self.document_repository = document_repository
+
+    def _build_documents_context(self, conversation_id: str) -> str:
+        """
+        Monta um texto com o conteúdo de todos os documentos anexados
+        à conversa, para ser incluído no contexto da IA sem inflar
+        o histórico de mensagens visível ao usuário.
+        """
+        documents = self.document_repository.list_documents(conversation_id)
+        if not documents:
+            return ""
+
+        parts = [
+            f"--- Documento: {doc.filename} ---\n{doc.content}" for doc in documents
+        ]
+        return "\n\nDocumentos anexados a esta conversa:\n\n" + "\n\n".join(parts)
 
     def create_conversation(self, title: str = "Nova conversa") -> ConversationModel:
         """Cria uma nova conversa vazia."""
@@ -79,9 +97,11 @@ class ConversationService:
             for message in conversation.messages
         ]
 
-        # Busca memórias relevantes e as adiciona ao system prompt.
+        # Busca memórias relevantes e documentos anexados, adicionando
+        # ambos ao system prompt (sem inflar o histórico de mensagens).
         memory_context = await self.memory_service.get_relevant_context(content)
-        system_content = SYSTEM_PROMPT + memory_context
+        documents_context = self._build_documents_context(conversation_id)
+        system_content = SYSTEM_PROMPT + memory_context + documents_context
 
         messages_with_system = [{"role": "system", "content": system_content}] + history
 
@@ -121,9 +141,11 @@ class ConversationService:
             {"role": message.role, "content": message.content}
             for message in conversation.messages
         ]
-        # Busca memórias relevantes e as adiciona ao system prompt.
+        # Busca memórias relevantes e documentos anexados, adicionando
+        # ambos ao system prompt (sem inflar o histórico de mensagens).
         memory_context = await self.memory_service.get_relevant_context(content)
-        system_content = SYSTEM_PROMPT + memory_context
+        documents_context = self._build_documents_context(conversation_id)
+        system_content = SYSTEM_PROMPT + memory_context + documents_context
 
         messages_with_system = [{"role": "system", "content": system_content}] + history
 
