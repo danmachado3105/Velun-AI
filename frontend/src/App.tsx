@@ -17,6 +17,8 @@ function App() {
     deleteConversation,
     handleFileSelected,
     isUploadingFile,
+    pendingAttachment,
+    removeAttachment,
   } = useConversation();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -56,6 +58,8 @@ function App() {
           onFileSelected={handleFileSelected}
           disabled={isSending || !activeConversation}
           isUploadingFile={isUploadingFile}
+          pendingAttachment={pendingAttachment}
+          onRemoveAttachment={removeAttachment}
         />
       </div>
     </div>

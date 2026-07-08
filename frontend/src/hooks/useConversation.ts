@@ -20,6 +20,11 @@ export function useConversation() {
   const [error, setError] = useState<string | null>(null);
   const [isUploadingFile, setIsUploadingFile] = useState(false);
 
+  const [pendingAttachment, setPendingAttachment] = useState<{
+    filename: string;
+    content: string;
+  } | null>(null);
+
   // Ao carregar a página, busca as conversas existentes. Se não houver
   // nenhuma, cria uma nova automaticamente.
   useEffect(() => {
@@ -77,10 +82,23 @@ export function useConversation() {
     async (content: string) => {
       if (!activeId) return;
 
+      // Se houver um arquivo anexado pendente, monta o conteúdo real
+      // (enviado para a IA) juntando o texto do arquivo com a mensagem,
+      // mas a mensagem exibida na tela mostra só um resumo do anexo.
+      const hasAttachment = pendingAttachment !== null;
+      const displayContent = hasAttachment
+        ? `📎 ${pendingAttachment!.filename}${content ? `\n\n${content}` : ""}`
+        : content;
+      const fullContentForAI = hasAttachment
+        ? `Arquivo anexado: ${pendingAttachment!.filename}\n\n${pendingAttachment!.content}${content ? `\n\n${content}` : ""}`
+        : content;
+
+      setPendingAttachment(null);
+
       const userMessage: Message = {
         id: crypto.randomUUID(),
         role: "user",
-        content,
+        content: displayContent,
         created_at: new Date().toISOString(),
       };
 
@@ -104,7 +122,7 @@ export function useConversation() {
       setError(null);
 
       try {
-        await sendMessageStream(activeId, content, (chunk) => {
+        await sendMessageStream(activeId, fullContentForAI, (chunk) => {
           setConversations((prev) =>
             prev.map((c) =>
               c.id === activeId
@@ -130,7 +148,7 @@ export function useConversation() {
   );
 
   const handleFileSelected = useCallback(
-    async (file: File): Promise<string | undefined> => {
+    async (file: File) => {
       if (!activeId) return;
 
       setIsUploadingFile(true);
@@ -138,17 +156,22 @@ export function useConversation() {
 
       try {
         const result = await uploadFile(activeId, file);
-        const messageContent = `Arquivo anexado: ${result.filename}\n\n${result.extracted_text}`;
-        return messageContent;
+        setPendingAttachment({
+          filename: result.filename,
+          content: result.extracted_text,
+        });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Erro ao processar arquivo.");
-        return undefined;
       } finally {
         setIsUploadingFile(false);
       }
     },
     [activeId]
   );
+
+  const removeAttachment = useCallback(() => {
+    setPendingAttachment(null);
+  }, []);
 
   return {
     conversations,
@@ -162,5 +185,7 @@ export function useConversation() {
     deleteConversation: handleDeleteConversation,
     handleFileSelected,
     isUploadingFile,
+    pendingAttachment,
+    removeAttachment,
   };
 }
