@@ -45,7 +45,27 @@ class TextExtractor:
         """Extrai texto de todas as páginas de um PDF."""
         reader = PdfReader(io.BytesIO(file_bytes))
         pages_text = [page.extract_text() or "" for page in reader.pages]
-        return "\n\n".join(pages_text)
+        full_text = "\n\n".join(pages_text)
+        return self._clean_spaced_text(full_text)
+
+    def _clean_spaced_text(self, text: str) -> str:
+        """
+        Corrige um problema comum em PDFs de design (ex: feitos no Canva),
+        onde cada letra é extraída separada por espaço (ex: "P a c o t e").
+
+        Detecta esse padrão e reagrupa as letras em palavras normais.
+        """
+        import re
+
+        # Detecta se o texto tem muitas sequências de "letra espaço letra".
+        spaced_pattern = re.findall(r"\b\w\s\w\s\w", text)
+        if len(spaced_pattern) < 5:
+            return text  # Texto normal, não precisa corrigir.
+
+        # Junta letras isoladas separadas por espaço simples, preservando
+        # espaços duplos (que geralmente indicam separação real de palavras).
+        text = re.sub(r"(?<=\w) (?=\w(?: |$))", "", text)
+        return text
 
     def _extract_from_docx(self, file_bytes: bytes) -> str:
         """Extrai texto de todos os parágrafos de um Word."""

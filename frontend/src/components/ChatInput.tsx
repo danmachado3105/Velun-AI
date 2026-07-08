@@ -3,7 +3,7 @@ import type { KeyboardEvent } from "react";
 
 interface ChatInputProps {
   onSend: (content: string) => void;
-  onFileSelected: (file: File) => void;
+  onFileSelected: (file: File) => Promise<string | undefined>;
   disabled?: boolean;
   isUploadingFile?: boolean;
 }
@@ -35,12 +35,14 @@ export function ChatInput({
     }
   }
 
-  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (file) {
-      onFileSelected(file);
+      const extractedContent = await onFileSelected(file);
+      if (extractedContent) {
+        setText(extractedContent);
+      }
     }
-    // Limpa o campo para permitir selecionar o mesmo arquivo de novo, se precisar.
     event.target.value = "";
   }
 

@@ -1,3 +1,4 @@
+import { uploadFile } from "../services/api";
 import { useCallback, useEffect, useState } from "react";
 import {
   createConversation,
@@ -6,6 +7,7 @@ import {
   sendMessageStream,
 } from "../services/api";
 import type { Conversation, Message } from "../types/chat";
+
 
 /**
  * Hook responsável por gerenciar a lista de conversas, a conversa
@@ -16,6 +18,7 @@ export function useConversation() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isUploadingFile, setIsUploadingFile] = useState(false);
 
   // Ao carregar a página, busca as conversas existentes. Se não houver
   // nenhuma, cria uma nova automaticamente.
@@ -126,6 +129,27 @@ export function useConversation() {
     [activeId]
   );
 
+  const handleFileSelected = useCallback(
+    async (file: File): Promise<string | undefined> => {
+      if (!activeId) return;
+
+      setIsUploadingFile(true);
+      setError(null);
+
+      try {
+        const result = await uploadFile(activeId, file);
+        const messageContent = `Arquivo anexado: ${result.filename}\n\n${result.extracted_text}`;
+        return messageContent;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Erro ao processar arquivo.");
+        return undefined;
+      } finally {
+        setIsUploadingFile(false);
+      }
+    },
+    [activeId]
+  );
+
   return {
     conversations,
     activeConversation,
@@ -136,5 +160,7 @@ export function useConversation() {
     newConversation: handleNewConversation,
     selectConversation: handleSelectConversation,
     deleteConversation: handleDeleteConversation,
+    handleFileSelected,
+    isUploadingFile,
   };
 }

@@ -15,6 +15,8 @@ function App() {
     newConversation,
     selectConversation,
     deleteConversation,
+    handleFileSelected,
+    isUploadingFile,
   } = useConversation();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -49,7 +51,12 @@ function App() {
           <div ref={messagesEndRef} />
         </main>
 
-        <ChatInput onSend={sendMessage} disabled={isSending || !activeConversation} />
+        <ChatInput
+          onSend={sendMessage}
+          onFileSelected={handleFileSelected}
+          disabled={isSending || !activeConversation}
+          isUploadingFile={isUploadingFile}
+        />
       </div>
     </div>
   );
