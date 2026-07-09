@@ -25,7 +25,7 @@ function App() {
 
   const [isDark, setIsDark] = useState(true);
 
-  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const [isMemoriesOpen, setIsMemoriesOpen] = useState(false);
 

@@ -32,9 +32,9 @@ export function useConversation() {
     listConversations()
       .then((existing) => {
         setConversations(existing);
-        if (existing.length > 0) {
-          setActiveId(existing[0].id);
-        }
+        // Propositalmente NÃO seleciona nenhuma conversa automaticamente
+        // ao carregar a página — o app sempre começa em uma tela de
+        // boas-vindas, pronta para uma nova conversa.
       })
       .catch(() => setError("Não foi possível carregar as conversas."))
       .finally(() => setIsLoadingConversations(false));
