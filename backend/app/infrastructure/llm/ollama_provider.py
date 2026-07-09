@@ -27,7 +27,12 @@ class OllamaProvider(LLMProvider):
         async with httpx.AsyncClient(timeout=120.0) as client:
             response = await client.post(
                 f"{self.base_url}/api/chat",
-                json={"model": self.model, "messages": messages, "stream": False},
+                json={
+                    "model": self.model,
+                    "messages": messages,
+                    "stream": False,
+                    "options": {"num_ctx": 8192},
+                },
             )
             response.raise_for_status()
             data = response.json()
@@ -41,7 +46,12 @@ class OllamaProvider(LLMProvider):
             async with client.stream(
                 "POST",
                 f"{self.base_url}/api/chat",
-                json={"model": self.model, "messages": messages, "stream": True},
+                json={
+                    "model": self.model,
+                    "messages": messages,
+                    "stream": True,
+                    "options": {"num_ctx": 8192},
+                },
             ) as response:
                 async for line in response.aiter_lines():
                     if not line:

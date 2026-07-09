@@ -49,13 +49,18 @@ class ConversationService:
         o histórico de mensagens visível ao usuário.
         """
         documents = self.document_repository.list_documents(conversation_id)
+        print(f"[DEBUG] Documentos encontrados: {len(documents)}")
         if not documents:
             return ""
 
         parts = [
             f"--- Documento: {doc.filename} ---\n{doc.content}" for doc in documents
         ]
-        return "\n\nDocumentos anexados a esta conversa:\n\n" + "\n\n".join(parts)
+        return (
+            "\n\nO conteúdo completo dos documentos abaixo JÁ ESTÁ disponível "
+            "para você. Use-o diretamente para responder, sem pedir links ou "
+            "acesso adicional:\n\n" + "\n\n".join(parts)
+        )
 
     def create_conversation(self, title: str = "Nova conversa") -> ConversationModel:
         """Cria uma nova conversa vazia."""
