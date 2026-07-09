@@ -20,11 +20,14 @@ export function Sidebar({
   onDeleteConversation,
 }: SidebarProps) {
   return (
-    <aside className="w-64 bg-gray-950 border-r border-gray-800 flex flex-col h-full">
+    <aside
+      className="w-64 flex flex-col h-full border-r"
+      style={{ backgroundColor: "var(--bg-secondary)", borderColor: "var(--border-color)" }}
+    >
       <div className="p-4">
         <button
           onClick={onNewConversation}
-          className="w-full rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white py-2 px-4 font-medium"
+          className="w-full rounded-xl aurora-gradient text-white py-2 px-4 font-medium font-display hover:opacity-90 transition"
         >
           + Nova conversa
         </button>
@@ -37,16 +40,17 @@ export function Sidebar({
             <div
               key={conversation.id}
               onClick={() => onSelectConversation(conversation.id)}
-              className={`group flex items-center justify-between rounded-lg px-3 py-2 cursor-pointer transition ${
-                isActive
-                  ? "bg-gray-800 text-white"
-                  : "text-gray-400 hover:bg-gray-900 hover:text-gray-200"
-              }`}
+              className="group flex items-center justify-between rounded-lg px-3 py-2 cursor-pointer transition"
+              style={{
+                backgroundColor: isActive ? "var(--bg-primary)" : "transparent",
+                color: "var(--text-primary)",
+                opacity: isActive ? 1 : 0.7,
+              }}
             >
               <span className="truncate text-sm">{conversation.title}</span>
               <button
                 onClick={(e) => {
-                  e.stopPropagation(); // evita selecionar a conversa ao clicar em apagar
+                  e.stopPropagation();
                   onDeleteConversation(conversation.id);
                 }}
                 className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition text-xs px-1"

@@ -54,14 +54,16 @@ export function ChatInput({
   }
 
   return (
-    <div className="border-t border-gray-800 p-4 bg-gray-900">
+    <div className="border-t p-4" style={{ borderColor: "var(--border-color)" }}>
       {pendingAttachment && (
         <div className="flex items-center gap-2 mb-2 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 w-fit">
           <span className="text-sm text-gray-200">📎 {pendingAttachment.filename}</span>
           <button
-            onClick={onRemoveAttachment}
-            className="text-gray-500 hover:text-red-400 transition text-xs"
-            title="Remover anexo"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={disabled || isUploadingFile}
+          title="Anexar arquivo"
+          className="rounded-xl border px-3 py-3 hover:opacity-80 transition disabled:opacity-40"
+          style={{ borderColor: "var(--border-color)", color: "var(--text-primary)" }}
           >
             ✕
           </button>
@@ -95,12 +97,17 @@ export function ChatInput({
             pendingAttachment ? "Adicione uma pergunta (opcional)..." : "Digite sua mensagem..."
           }
           rows={1}
-          className="flex-1 resize-none rounded-xl bg-gray-800 text-white px-4 py-3 outline-none border border-gray-700 focus:border-blue-500 disabled:opacity-50"
+          className="flex-1 resize-none rounded-xl px-4 py-3 outline-none border focus:border-[var(--color-aurora-blue)] disabled:opacity-50"
+          style={{
+            backgroundColor: "var(--bg-secondary)",
+            color: "var(--text-primary)",
+            borderColor: "var(--border-color)",
+          }}
         />
         <button
           onClick={handleSend}
           disabled={disabled || (!text.trim() && !pendingAttachment)}
-          className="rounded-xl bg-blue-600 px-4 py-3 text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-700 transition"
+          className="rounded-xl aurora-gradient px-4 py-3 text-white font-medium font-display disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition"
         >
           Enviar
         </button>
