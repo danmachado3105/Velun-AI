@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
+import { Paperclip } from "lucide-react";
 
 interface PendingAttachment {
   filename: string;
@@ -56,8 +57,14 @@ export function ChatInput({
   return (
     <div className="border-t p-4" style={{ borderColor: "var(--border-color)" }}>
       {pendingAttachment && (
-        <div className="flex items-center gap-2 mb-2 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 w-fit">
-          <span className="text-sm text-gray-200">📎 {pendingAttachment.filename}</span>
+        <div
+          className="flex items-center gap-2 mb-2 border rounded-lg px-3 py-2 w-fit"
+          style={{ backgroundColor: "var(--bg-secondary)", borderColor: "var(--border-color)" }}
+        >
+          <Paperclip size={14} style={{ color: "var(--text-primary)" }} />
+          <span className="text-sm" style={{ color: "var(--text-primary)" }}>
+            {pendingAttachment.filename}
+          </span>
           <button
           onClick={() => fileInputRef.current?.click()}
           disabled={disabled || isUploadingFile}
@@ -83,9 +90,10 @@ export function ChatInput({
           onClick={() => fileInputRef.current?.click()}
           disabled={disabled || isUploadingFile}
           title="Anexar arquivo"
-          className="rounded-xl border border-gray-700 px-3 py-3 text-gray-300 hover:bg-gray-800 transition disabled:opacity-40"
+          className="rounded-xl border px-3 py-3 hover:opacity-80 transition disabled:opacity-40"
+          style={{ borderColor: "var(--border-color)", color: "var(--text-primary)" }}
         >
-          {isUploadingFile ? "..." : "📎"}
+          {isUploadingFile ? "..." : <Paperclip size={18} />}
         </button>
 
         <textarea
