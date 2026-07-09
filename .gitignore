@@ -187,3 +187,6 @@ __pycache__/
 *.pyc
 
 backend/chroma_data/
+
+frontend/node_modules/
+frontend/dist/
