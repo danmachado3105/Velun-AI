@@ -47,3 +47,27 @@
   --tw-prose-bullets: var(--text-primary);
   --tw-prose-quotes: var(--text-primary);
 }
+
+/* Estiliza a barra de rolagem para acompanhar o tema claro/escuro,
+   em vez de usar a aparência padrão (geralmente clara) do navegador. */
+* {
+  scrollbar-color: var(--border-color) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: 8px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-aurora-blue);
+}
