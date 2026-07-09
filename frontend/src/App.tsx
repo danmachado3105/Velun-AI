@@ -63,9 +63,24 @@ function App() {
 
         <main className="flex-1 overflow-y-auto px-6 py-4">
           {!activeConversation && !error && (
-            <p className="text-gray-400 text-center mt-10">Carregando...</p>
+            <div className="flex flex-col items-center justify-center h-full opacity-60">
+              <div className="w-8 h-8 rounded-full aurora-gradient animate-pulse mb-3" />
+              <p>Carregando conversa...</p>
+            </div>
           )}
-          {error && <p className="text-red-400 text-center mt-10">{error}</p>}
+          {error && (
+            <div className="flex flex-col items-center justify-center h-full">
+              <p className="text-red-400 text-center max-w-sm">{error}</p>
+            </div>
+          )}
+          {activeConversation && activeConversation.messages.length === 0 && (
+            <div className="flex flex-col items-center justify-center h-full opacity-70">
+              <h2 className="text-2xl font-display aurora-text font-bold mb-2">
+                Olá! Eu sou o Velun AI
+              </h2>
+              <p className="text-sm">Envie uma mensagem para começar a conversar.</p>
+            </div>
+          )}
           {activeConversation?.messages.map((message) => (
             <MessageBubble key={message.id} message={message} />
           ))}
