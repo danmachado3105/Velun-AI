@@ -49,6 +49,47 @@ export async function deleteConversation(id: string): Promise<void> {
  * Envia uma mensagem e recebe a resposta da IA em tempo real (streaming),
  * chamando `onChunk` a cada pedacinho de texto recebido.
  */
+/**
+ * Lê um stream de eventos SSE (Server-Sent Events) da resposta,
+ * chamando onChunk para cada pedaço de texto recebido. Lógica
+ * compartilhada por todas as funções que consomem streaming da IA.
+ */
+async function consumeSSEStream(
+  response: Response,
+  onChunk: (chunk: string) => void
+): Promise<void> {
+  const reader = response.body!.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+
+    const events = buffer.split(/\r\n\r\n|\n\n/);
+    buffer = events.pop() ?? "";
+
+    for (const rawEvent of events) {
+      if (!rawEvent.trim()) continue;
+
+      const lines = rawEvent.split(/\r\n|\n/);
+      const dataLines = lines
+        .filter((line) => line.startsWith("data:"))
+        .map((line) => (line.startsWith("data: ") ? line.slice(6) : line.slice(5)));
+
+      if (dataLines.length > 0) {
+        onChunk(dataLines.join("\n"));
+      }
+    }
+  }
+}
+
+/**
+ * Envia uma mensagem e recebe a resposta da IA em tempo real (streaming),
+ * chamando `onChunk` a cada pedacinho de texto recebido.
+ */
 export async function sendMessageStream(
   conversationId: string,
   content: string,
@@ -67,44 +108,7 @@ export async function sendMessageStream(
     throw new Error("Erro ao enviar mensagem.");
   }
 
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-
-  // Guarda pedaços de texto que ainda não formam uma linha completa,
-  // até a próxima leitura chegar e "completar" o que faltava.
-  let buffer = "";
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-
-    // "stream: true" garante que caracteres acentuados não fiquem
-    // corrompidos quando cortados no meio por um pacote de rede.
-    buffer += decoder.decode(value, { stream: true });
-
-    // Cada evento SSE termina com uma linha em branco. Aceitamos tanto
-    // "\n\n" quanto "\r\n\r\n" (formato usado por diferentes servidores),
-    // para garantir que os eventos sejam sempre reconhecidos corretamente.
-    const events = buffer.split(/\r\n\r\n|\n\n/);
-    buffer = events.pop() ?? "";
-
-    for (const rawEvent of events) {
-      if (!rawEvent.trim()) continue;
-
-      const lines = rawEvent.split(/\r\n|\n/);
-
-      // Um mesmo pedaço de texto pode vir dividido em várias linhas "data:",
-      // quando ele contém quebras de linha. Juntamos todas com "\n" entre
-      // elas, para não perder a quebra de linha original.
-      const dataLines = lines
-        .filter((line) => line.startsWith("data:"))
-        .map((line) => (line.startsWith("data: ") ? line.slice(6) : line.slice(5)));
-
-      if (dataLines.length > 0) {
-        onChunk(dataLines.join("\n"));
-      }
-    }
-  }
+  await consumeSSEStream(response, onChunk);
 }
 
 /**
@@ -154,4 +158,48 @@ export async function deleteMemory(memoryId: string): Promise<void> {
   if (!response.ok) {
     throw new Error("Erro ao apagar memória.");
   }
+}
+
+/**
+ * Regenera a última resposta da IA em uma conversa (streaming).
+ */
+export async function regenerateMessage(
+  conversationId: string,
+  onChunk: (chunk: string) => void
+): Promise<void> {
+  const response = await fetch(
+    `${API_BASE_URL}/conversations/${conversationId}/messages/regenerate`,
+    { method: "POST" }
+  );
+
+  if (!response.ok || !response.body) {
+    throw new Error("Erro ao regenerar mensagem.");
+  }
+
+  await consumeSSEStream(response, onChunk);
+}
+
+/**
+ * Edita uma mensagem do usuário e regenera a resposta a partir dela (streaming).
+ */
+export async function editMessage(
+  conversationId: string,
+  messageId: string,
+  content: string,
+  onChunk: (chunk: string) => void
+): Promise<void> {
+  const response = await fetch(
+    `${API_BASE_URL}/conversations/${conversationId}/messages/${messageId}/edit`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content }),
+    }
+  );
+
+  if (!response.ok || !response.body) {
+    throw new Error("Erro ao editar mensagem.");
+  }
+
+  await consumeSSEStream(response, onChunk);
 }

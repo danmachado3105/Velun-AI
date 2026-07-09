@@ -7,7 +7,7 @@ import {
   sendMessageStream,
 } from "../services/api";
 import type { Conversation, Message } from "../types/chat";
-
+import { regenerateMessage, editMessage } from "../services/api";
 
 /**
  * Hook responsável por gerenciar a lista de conversas, a conversa
@@ -152,6 +152,103 @@ export function useConversation() {
     [activeId, pendingAttachment]
   );
 
+  const regenerateLastResponse = useCallback(async () => {
+    if (!activeId) return;
+
+    setConversations((prev) =>
+      prev.map((c) => {
+        if (c.id !== activeId) return c;
+        const lastAssistantIndex = [...c.messages].reverse().findIndex((m) => m.role === "assistant");
+        if (lastAssistantIndex === -1) return c;
+        const cutIndex = c.messages.length - 1 - lastAssistantIndex;
+
+        const newAssistantId = crypto.randomUUID();
+        const trimmedMessages = c.messages.slice(0, cutIndex);
+        return {
+          ...c,
+          messages: [
+            ...trimmedMessages,
+            { id: newAssistantId, role: "assistant", content: "", created_at: new Date().toISOString() },
+          ],
+        };
+      })
+    );
+
+    setIsSending(true);
+    setError(null);
+
+    try {
+      await regenerateMessage(activeId, (chunk) => {
+        setConversations((prev) =>
+          prev.map((c) => {
+            if (c.id !== activeId) return c;
+            const lastMessage = c.messages[c.messages.length - 1];
+            return {
+              ...c,
+              messages: c.messages.map((m) =>
+                m.id === lastMessage.id ? { ...m, content: m.content + chunk } : m
+              ),
+            };
+          })
+        );
+      });
+    } catch {
+      setError("Erro ao regenerar resposta.");
+    } finally {
+      setIsSending(false);
+    }
+  }, [activeId]);
+
+  const editMessageAndRegenerate = useCallback(
+    async (messageId: string, newContent: string) => {
+      if (!activeId) return;
+
+      setConversations((prev) =>
+        prev.map((c) => {
+          if (c.id !== activeId) return c;
+          const editIndex = c.messages.findIndex((m) => m.id === messageId);
+          if (editIndex === -1) return c;
+
+          const newAssistantId = crypto.randomUUID();
+          const trimmedMessages = c.messages.slice(0, editIndex);
+          return {
+            ...c,
+            messages: [
+              ...trimmedMessages,
+              { id: messageId, role: "user", content: newContent, created_at: new Date().toISOString() },
+              { id: newAssistantId, role: "assistant", content: "", created_at: new Date().toISOString() },
+            ],
+          };
+        })
+      );
+
+      setIsSending(true);
+      setError(null);
+
+      try {
+        await editMessage(activeId, messageId, newContent, (chunk) => {
+          setConversations((prev) =>
+            prev.map((c) => {
+              if (c.id !== activeId) return c;
+              const lastMessage = c.messages[c.messages.length - 1];
+              return {
+                ...c,
+                messages: c.messages.map((m) =>
+                  m.id === lastMessage.id ? { ...m, content: m.content + chunk } : m
+                ),
+              };
+            })
+          );
+        });
+      } catch {
+        setError("Erro ao editar mensagem.");
+      } finally {
+        setIsSending(false);
+      }
+    },
+    [activeId]
+  );
+
   const handleFileSelected = useCallback(
     async (file: File) => {
       if (!activeId) return;
@@ -193,5 +290,7 @@ export function useConversation() {
     pendingAttachment,
     removeAttachment,
     isLoadingConversations,
+    regenerateLastResponse,
+    editMessageAndRegenerate,
   };
 }
