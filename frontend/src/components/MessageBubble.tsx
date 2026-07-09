@@ -2,6 +2,7 @@ import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { Message } from "../types/chat";
+import { Copy, Check, Pencil, RotateCcw } from "lucide-react";
 
 interface MessageBubbleProps {
   message: Message;
@@ -115,29 +116,29 @@ export function MessageBubble({
           <button
             onClick={handleCopy}
             title="Copiar"
-            className="text-xs px-2 py-1 rounded opacity-60 hover:opacity-100 transition"
+            className="p-1.5 rounded opacity-60 hover:opacity-100 transition"
             style={{ color: "var(--text-primary)" }}
           >
-            {copied ? "✓ Copiado" : "📋"}
+            {copied ? <Check size={14} /> : <Copy size={14} />}
           </button>
           {isUser && onEdit && (
             <button
               onClick={() => setIsEditing(true)}
               title="Editar mensagem"
-              className="text-xs px-2 py-1 rounded opacity-60 hover:opacity-100 transition"
+              className="p-1.5 rounded opacity-60 hover:opacity-100 transition"
               style={{ color: "var(--text-primary)" }}
             >
-              ✏️
+              <Pencil size={14} />
             </button>
           )}
           {!isUser && isLastAssistantMessage && onRegenerate && (
             <button
               onClick={onRegenerate}
               title="Tentar novamente"
-              className="text-xs px-2 py-1 rounded opacity-60 hover:opacity-100 transition"
+              className="p-1.5 rounded opacity-60 hover:opacity-100 transition"
               style={{ color: "var(--text-primary)" }}
             >
-              🔄
+              <RotateCcw size={14} />
             </button>
           )}
         </div>

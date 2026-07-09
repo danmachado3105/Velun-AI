@@ -4,6 +4,7 @@ import { MessageBubble } from "./components/MessageBubble";
 import { ChatInput } from "./components/ChatInput";
 import { Sidebar } from "./components/Sidebar";
 import { MemoriesModal } from "./components/MemoriesModal";
+import { Sun, Moon, Brain, Menu } from "lucide-react";
 
 function App() {
   const {
@@ -64,28 +65,29 @@ function App() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="text-xl hover:opacity-70 transition"
+              className="hover:opacity-70 transition"
               style={{ color: "var(--text-primary)" }}
               title={isSidebarOpen ? "Fechar menu" : "Abrir menu"}
             >
-              ☰
+              <Menu size={20} />
             </button>
             <h1 className="text-xl font-display font-bold aurora-text">Velun AI</h1>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsMemoriesOpen(true)}
-              className="text-sm px-3 py-1.5 rounded-lg border transition"
+              className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border transition hover:opacity-80"
               style={{ borderColor: "var(--border-color)", color: "var(--text-primary)" }}
             >
-              🧠 Memórias
+              <Brain size={16} /> Memórias
             </button>
             <button
               onClick={() => setIsDark(!isDark)}
-              className="text-sm px-3 py-1.5 rounded-lg border transition"
+              className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border transition hover:opacity-80"
               style={{ borderColor: "var(--border-color)", color: "var(--text-primary)" }}
             >
-              {isDark ? "☀️ Claro" : "🌙 Escuro"}
+              {isDark ? <Sun size={16} /> : <Moon size={16} />}
+              {isDark ? "Claro" : "Escuro"}
             </button>
           </div>
         </header>
