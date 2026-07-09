@@ -21,6 +21,8 @@ function App() {
     pendingAttachment,
     removeAttachment,
     isLoadingConversations,
+    regenerateLastResponse,
+    editMessageAndRegenerate,
   } = useConversation();
 
   const [isDark, setIsDark] = useState(true);
@@ -108,9 +110,21 @@ function App() {
               <p className="text-sm">Envie uma mensagem para começar a conversar.</p>
             </div>
           )}
-          {activeConversation?.messages.map((message) => (
-            <MessageBubble key={message.id} message={message} />
-          ))}
+          {activeConversation?.messages.map((message, index) => {
+            const isLastAssistantMessage =
+              message.role === "assistant" &&
+              index === activeConversation.messages.length - 1;
+
+            return (
+              <MessageBubble
+                key={message.id}
+                message={message}
+                isLastAssistantMessage={isLastAssistantMessage}
+                onRegenerate={regenerateLastResponse}
+                onEdit={editMessageAndRegenerate}
+              />
+            );
+          })}
           <div ref={messagesEndRef} />
         </main>
 
