@@ -162,6 +162,69 @@ class ConversationService:
         # sem atrasar a resposta que o usuário já recebeu.
         await self.memory_service.extract_and_save(content)
 
+    async def regenerate_last_response(self, conversation_id: str):
+        """
+        Apaga a última resposta da IA e gera uma nova, com base
+        no mesmo histórico (usado no botão "tentar novamente").
+        """
+        last_assistant = self.repository.get_last_assistant_message(conversation_id)
+        if last_assistant:
+            self.repository.delete_messages_from(conversation_id, last_assistant.id)
+
+        conversation = self.repository.get_conversation(conversation_id)
+        history = [
+            {"role": message.role, "content": message.content}
+            for message in conversation.messages
+        ]
+
+        last_user_content = history[-1]["content"] if history else ""
+        memory_context = await self.memory_service.get_relevant_context(last_user_content)
+        documents_context = self._build_documents_context(conversation_id)
+        system_content = SYSTEM_PROMPT + memory_context + documents_context
+        messages_with_system = [{"role": "system", "content": system_content}] + history
+
+        full_response = ""
+        async for chunk in self.llm_provider.generate_stream(messages_with_system):
+            full_response += chunk
+            yield chunk
+
+        self.repository.add_message(
+            conversation_id=conversation_id, role="assistant", content=full_response
+        )
+
+    async def edit_message_and_regenerate(
+        self, conversation_id: str, message_id: str, new_content: str
+    ):
+        """
+        Atualiza o conteúdo de uma mensagem do usuário, apaga tudo que
+        veio depois dela, e gera uma nova resposta da IA a partir daí.
+        """
+        self.repository.update_message_content(message_id, new_content)
+        self.repository.delete_messages_from(conversation_id, message_id)
+        self.repository.add_message(
+            conversation_id=conversation_id, role="user", content=new_content
+        )
+
+        conversation = self.repository.get_conversation(conversation_id)
+        history = [
+            {"role": message.role, "content": message.content}
+            for message in conversation.messages
+        ]
+
+        memory_context = await self.memory_service.get_relevant_context(new_content)
+        documents_context = self._build_documents_context(conversation_id)
+        system_content = SYSTEM_PROMPT + memory_context + documents_context
+        messages_with_system = [{"role": "system", "content": system_content}] + history
+
+        full_response = ""
+        async for chunk in self.llm_provider.generate_stream(messages_with_system):
+            full_response += chunk
+            yield chunk
+
+        self.repository.add_message(
+            conversation_id=conversation_id, role="assistant", content=full_response
+        )
+
     def delete_conversation(self, conversation_id: str) -> None:
         """Apaga uma conversa inteira."""
         self.repository.delete_conversation(conversation_id)

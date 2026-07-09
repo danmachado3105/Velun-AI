@@ -159,3 +159,47 @@ async def upload_file(
         content=extracted_text,
     )
     return document
+
+@router.post("/conversations/{conversation_id}/messages/regenerate")
+async def regenerate_message(
+    conversation_id: str,
+    service: ConversationService = Depends(get_conversation_service),
+):
+    """Regenera a última resposta da IA (botão 'tentar novamente')."""
+    conversation = service.get_conversation(conversation_id)
+    if conversation is None:
+        raise HTTPException(status_code=404, detail="Conversa não encontrada.")
+
+    async def event_generator():
+        async for chunk in service.regenerate_last_response(conversation_id):
+            yield {"event": "message", "data": chunk}
+        yield {"event": "done", "data": ""}
+
+    return EventSourceResponse(event_generator())
+
+
+class EditMessageRequest(SendMessageRequest):
+    """Corpo da requisição para editar uma mensagem."""
+    pass
+
+
+@router.post("/conversations/{conversation_id}/messages/{message_id}/edit")
+async def edit_message(
+    conversation_id: str,
+    message_id: str,
+    payload: EditMessageRequest,
+    service: ConversationService = Depends(get_conversation_service),
+):
+    """Edita uma mensagem do usuário e regenera a resposta a partir dali."""
+    conversation = service.get_conversation(conversation_id)
+    if conversation is None:
+        raise HTTPException(status_code=404, detail="Conversa não encontrada.")
+
+    async def event_generator():
+        async for chunk in service.edit_message_and_regenerate(
+            conversation_id, message_id, payload.content
+        ):
+            yield {"event": "message", "data": chunk}
+        yield {"event": "done", "data": ""}
+
+    return EventSourceResponse(event_generator())

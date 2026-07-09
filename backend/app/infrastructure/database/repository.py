@@ -63,3 +63,40 @@ class ConversationRepository:
         if conversation:
             self.db.delete(conversation)
             self.db.commit()
+
+    def delete_messages_from(self, conversation_id: str, message_id: str) -> None:
+        """
+        Apaga uma mensagem específica e todas as que vieram depois dela
+        na mesma conversa (usado para editar ou regenerar respostas).
+        """
+        conversation = self.get_conversation(conversation_id)
+        if not conversation:
+            return
+
+        target_message = next(
+            (m for m in conversation.messages if m.id == message_id), None
+        )
+        if not target_message:
+            return
+
+        messages_to_delete = [
+            m for m in conversation.messages if m.created_at >= target_message.created_at
+        ]
+        for message in messages_to_delete:
+            self.db.delete(message)
+        self.db.commit()
+
+    def update_message_content(self, message_id: str, content: str) -> None:
+        """Atualiza o conteúdo de uma mensagem existente."""
+        message = self.db.get(MessageModel, message_id)
+        if message:
+            message.content = content
+            self.db.commit()
+
+    def get_last_assistant_message(self, conversation_id: str) -> MessageModel | None:
+        """Busca a última mensagem da IA em uma conversa."""
+        conversation = self.get_conversation(conversation_id)
+        if not conversation:
+            return None
+        assistant_messages = [m for m in conversation.messages if m.role == "assistant"]
+        return assistant_messages[-1] if assistant_messages else None
