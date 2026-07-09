@@ -19,3 +19,8 @@ export interface Conversation {
   updated_at: string;
   messages: Message[];
 }
+
+export interface Memory {
+  id: string;
+  content: string;
+}

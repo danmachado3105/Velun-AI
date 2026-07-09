@@ -132,3 +132,26 @@ export async function uploadFile(
 
   return response.json();
 }
+
+/**
+ * Busca todas as memórias guardadas sobre o usuário.
+ */
+export async function listMemories(): Promise<import("../types/chat").Memory[]> {
+  const response = await fetch(`${API_BASE_URL}/memories`);
+  if (!response.ok) {
+    throw new Error("Erro ao buscar memórias.");
+  }
+  return response.json();
+}
+
+/**
+ * Apaga uma memória específica.
+ */
+export async function deleteMemory(memoryId: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/memories/${memoryId}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) {
+    throw new Error("Erro ao apagar memória.");
+  }
+}

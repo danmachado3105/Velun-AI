@@ -3,6 +3,7 @@ import { useConversation } from "./hooks/useConversation";
 import { MessageBubble } from "./components/MessageBubble";
 import { ChatInput } from "./components/ChatInput";
 import { Sidebar } from "./components/Sidebar";
+import { MemoriesModal } from "./components/MemoriesModal";
 
 function App() {
   const {
@@ -24,6 +25,8 @@ function App() {
   const [isDark, setIsDark] = useState(true);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
+
+  const [isMemoriesOpen, setIsMemoriesOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isDark);
@@ -66,13 +69,22 @@ function App() {
             </button>
             <h1 className="text-xl font-display font-bold aurora-text">Velun AI</h1>
           </div>
-          <button
-            onClick={() => setIsDark(!isDark)}
-            className="text-sm px-3 py-1.5 rounded-lg border transition"
-            style={{ borderColor: "var(--border-color)", color: "var(--text-primary)" }}
-          >
-            {isDark ? "☀️ Claro" : "🌙 Escuro"}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsMemoriesOpen(true)}
+              className="text-sm px-3 py-1.5 rounded-lg border transition"
+              style={{ borderColor: "var(--border-color)", color: "var(--text-primary)" }}
+            >
+              🧠 Memórias
+            </button>
+            <button
+              onClick={() => setIsDark(!isDark)}
+              className="text-sm px-3 py-1.5 rounded-lg border transition"
+              style={{ borderColor: "var(--border-color)", color: "var(--text-primary)" }}
+            >
+              {isDark ? "☀️ Claro" : "🌙 Escuro"}
+            </button>
+          </div>
         </header>
 
         <main className="flex-1 overflow-y-auto px-6 py-4">
@@ -110,6 +122,7 @@ function App() {
           onRemoveAttachment={removeAttachment}
         />
       </div>
+      <MemoriesModal isOpen={isMemoriesOpen} onClose={() => setIsMemoriesOpen(false)} />
     </div>
   );
 }
