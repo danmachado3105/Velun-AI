@@ -23,6 +23,8 @@ function App() {
 
   const [isDark, setIsDark] = useState(true);
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
+
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isDark);
   }, [isDark]);
@@ -44,6 +46,8 @@ function App() {
         onSelectConversation={selectConversation}
         onNewConversation={newConversation}
         onDeleteConversation={deleteConversation}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
       />
 
       <div className="flex flex-col flex-1">
@@ -51,7 +55,17 @@ function App() {
           className="border-b px-6 py-4 flex items-center justify-between"
           style={{ borderColor: "var(--border-color)" }}
         >
-          <h1 className="text-xl font-display font-bold aurora-text">Velun AI</h1>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="text-xl hover:opacity-70 transition"
+              style={{ color: "var(--text-primary)" }}
+              title={isSidebarOpen ? "Fechar menu" : "Abrir menu"}
+            >
+              ☰
+            </button>
+            <h1 className="text-xl font-display font-bold aurora-text">Velun AI</h1>
+          </div>
           <button
             onClick={() => setIsDark(!isDark)}
             className="text-sm px-3 py-1.5 rounded-lg border transition"
