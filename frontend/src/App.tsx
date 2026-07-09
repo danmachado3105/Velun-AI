@@ -78,7 +78,7 @@ function App() {
               <h2 className="text-2xl font-display aurora-text font-bold mb-2">
                 Olá! Eu sou o Velun AI
               </h2>
-              <p className="text-sm">Envie uma mensagem para começar a conversar.</p>
+              <p className="text-sm opacity-70">Envie uma mensagem para começar a conversar.</p>
             </div>
           )}
           {activeConversation?.messages.map((message) => (

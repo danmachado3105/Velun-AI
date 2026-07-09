@@ -12,10 +12,10 @@
 }
 
 :root {
-  --bg-primary: #FAFAFA;
-  --bg-secondary: #F0F0F2;
-  --text-primary: #1A1D23;
-  --border-color: #E2E2E5;
+  --bg-primary: #F0F0F3;
+  --bg-secondary: #FFFFFF;
+  --text-primary: #14161C;
+  --border-color: #D5D6DC;
 }
 
 .dark {
