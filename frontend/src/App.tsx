@@ -20,6 +20,7 @@ function App() {
     isUploadingFile,
     pendingAttachment,
     removeAttachment,
+    isLoadingConversations,
   } = useConversation();
 
   const [isDark, setIsDark] = useState(true);
@@ -88,10 +89,10 @@ function App() {
         </header>
 
         <main className="flex-1 overflow-y-auto px-6 py-4">
-          {!activeConversation && !error && (
+          {isLoadingConversations && (
             <div className="flex flex-col items-center justify-center h-full opacity-60">
               <div className="w-8 h-8 rounded-full aurora-gradient animate-pulse mb-3" />
-              <p>Carregando conversa...</p>
+              <p>Carregando...</p>
             </div>
           )}
           {error && (
@@ -99,12 +100,12 @@ function App() {
               <p className="text-red-400 text-center max-w-sm">{error}</p>
             </div>
           )}
-          {activeConversation && activeConversation.messages.length === 0 && (
+          {!isLoadingConversations && !error && (!activeConversation || activeConversation.messages.length === 0) && (
             <div className="flex flex-col items-center justify-center h-full opacity-70">
               <h2 className="text-2xl font-display aurora-text font-bold mb-2">
                 Olá! Eu sou o Velun AI
               </h2>
-              <p className="text-sm opacity-70">Envie uma mensagem para começar a conversar.</p>
+              <p className="text-sm">Envie uma mensagem para começar a conversar.</p>
             </div>
           )}
           {activeConversation?.messages.map((message) => (
@@ -116,7 +117,7 @@ function App() {
         <ChatInput
           onSend={sendMessage}
           onFileSelected={handleFileSelected}
-          disabled={isSending || !activeConversation}
+          disabled={isSending || isLoadingConversations}
           isUploadingFile={isUploadingFile}
           pendingAttachment={pendingAttachment}
           onRemoveAttachment={removeAttachment}

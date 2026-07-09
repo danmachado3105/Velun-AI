@@ -19,6 +19,7 @@ export function useConversation() {
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isUploadingFile, setIsUploadingFile] = useState(false);
+  const [isLoadingConversations, setIsLoadingConversations] = useState(true);
 
   const [pendingAttachment, setPendingAttachment] = useState<{
     filename: string;
@@ -29,30 +30,24 @@ export function useConversation() {
   // nenhuma, cria uma nova automaticamente.
   useEffect(() => {
     listConversations()
-      .then(async (existing) => {
+      .then((existing) => {
+        setConversations(existing);
         if (existing.length > 0) {
-          setConversations(existing);
           setActiveId(existing[0].id);
-        } else {
-          const created = await createConversation();
-          setConversations([created]);
-          setActiveId(created.id);
         }
       })
-      .catch(() => setError("Não foi possível carregar as conversas."));
+      .catch(() => setError("Não foi possível carregar as conversas."))
+      .finally(() => setIsLoadingConversations(false));
   }, []);
 
   const activeConversation =
     conversations.find((c) => c.id === activeId) ?? null;
 
-  const handleNewConversation = useCallback(async () => {
-    try {
-      const created = await createConversation();
-      setConversations((prev) => [created, ...prev]);
-      setActiveId(created.id);
-    } catch {
-      setError("Não foi possível criar uma nova conversa.");
-    }
+  const handleNewConversation = useCallback(() => {
+    // Não cria a conversa no banco ainda — só marca que não há
+    // conversa ativa. A conversa real só é criada quando o usuário
+    // mandar a primeira mensagem (veja sendMessage).
+    setActiveId(null);
   }, []);
 
   const handleSelectConversation = useCallback((id: string) => {
@@ -80,7 +75,21 @@ export function useConversation() {
 
   const sendMessage = useCallback(
     async (content: string) => {
-      if (!activeId) return;
+      let conversationId = activeId;
+
+      // Se não há conversa ativa (ex: usuário clicou em "Nova conversa"
+      // mas ainda não mandou nada), cria a conversa agora, na hora certa.
+      if (!conversationId) {
+        try {
+          const created = await createConversation();
+          setConversations((prev) => [created, ...prev]);
+          conversationId = created.id;
+          setActiveId(created.id);
+        } catch {
+          setError("Não foi possível criar a conversa.");
+          return;
+        }
+      }
 
       // O documento já foi salvo no backend durante o upload; aqui só
       // precisamos indicar visualmente que ele foi anexado a esta mensagem.
@@ -109,7 +118,7 @@ export function useConversation() {
       // Atualiza apenas a conversa ativa dentro da lista de conversas.
       setConversations((prev) =>
         prev.map((c) =>
-          c.id === activeId
+          c.id === conversationId
             ? { ...c, messages: [...c.messages, userMessage, assistantPlaceholder] }
             : c
         )
@@ -118,10 +127,10 @@ export function useConversation() {
       setError(null);
 
       try {
-        await sendMessageStream(activeId, content, (chunk) => {
+        await sendMessageStream(conversationId, content, (chunk) => {
           setConversations((prev) =>
             prev.map((c) =>
-              c.id === activeId
+              c.id === conversationId
                 ? {
                     ...c,
                     messages: c.messages.map((msg) =>
@@ -183,5 +192,6 @@ export function useConversation() {
     isUploadingFile,
     pendingAttachment,
     removeAttachment,
+    isLoadingConversations,
   };
 }
