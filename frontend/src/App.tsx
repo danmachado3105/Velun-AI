@@ -83,7 +83,7 @@ function App() {
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto px-6 py-4">
+        <main className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
           {isLoadingConversations && (
             <div className="flex flex-col items-center justify-center h-full opacity-60">
               <div className="w-8 h-8 rounded-full aurora-gradient animate-pulse mb-3" />

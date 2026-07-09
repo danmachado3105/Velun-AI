@@ -82,13 +82,9 @@ export function MessageBubble({
   }
 
   return (
-    <div
-      className={`flex ${isUser ? "justify-end" : "justify-start"} gap-2 mb-4 group animate-fade-in`}
-    >
+    <div className={`flex gap-2 ${isUser ? "justify-end" : "justify-start"} group animate-fade-in`}>
       {!isUser && (
-        <div className="w-7 h-7 rounded-full aurora-gradient flex items-center justify-center shrink-0 mt-1">
-          <Sparkles size={14} className="text-white" />
-        </div>
+        <div className="w-7 h-7 rounded-full aurora-gradient shrink-0 mt-1" />
       )}
       <div className="max-w-[70%]">
         <div
@@ -107,6 +103,12 @@ export function MessageBubble({
         >
           {isUser ? (
             message.content
+          ) : message.content === "" ? (
+            <div className="flex gap-1 py-1">
+              <span className="w-1.5 h-1.5 rounded-full aurora-gradient animate-bounce" style={{ animationDelay: "0ms" }} />
+              <span className="w-1.5 h-1.5 rounded-full aurora-gradient animate-bounce" style={{ animationDelay: "150ms" }} />
+              <span className="w-1.5 h-1.5 rounded-full aurora-gradient animate-bounce" style={{ animationDelay: "300ms" }} />
+            </div>
           ) : (
             <div className="prose prose-sm max-w-none dark:prose-invert">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
