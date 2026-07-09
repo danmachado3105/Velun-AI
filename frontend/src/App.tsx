@@ -4,6 +4,7 @@ import { MessageBubble } from "./components/MessageBubble";
 import { ChatInput } from "./components/ChatInput";
 import { Sidebar } from "./components/Sidebar";
 import { Sun, Moon, Menu } from "lucide-react";
+import { TypingIndicator } from "./components/TypingIndicator";
 
 function App() {
   const {
@@ -106,6 +107,12 @@ function App() {
             const isLastAssistantMessage =
               message.role === "assistant" &&
               index === activeConversation.messages.length - 1;
+
+            // Enquanto a resposta ainda está vazia (streaming não começou),
+            // mostra o indicador de "digitando..." no lugar da bolha vazia.
+            if (isLastAssistantMessage && message.content === "" && isSending) {
+              return <TypingIndicator key={message.id} />;
+            }
 
             return (
               <MessageBubble

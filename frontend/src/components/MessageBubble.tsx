@@ -2,7 +2,7 @@ import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { Message } from "../types/chat";
-import { Copy, Check, Pencil, RotateCcw } from "lucide-react";
+import { Copy, Check, Pencil, RotateCcw, Sparkles } from "lucide-react";
 
 interface MessageBubbleProps {
   message: Message;
@@ -82,10 +82,17 @@ export function MessageBubble({
   }
 
   return (
-    <div className={`flex ${isUser ? "justify-end" : "justify-start"} mb-1 group`}>
+    <div
+      className={`flex ${isUser ? "justify-end" : "justify-start"} gap-2 mb-4 group animate-fade-in`}
+    >
+      {!isUser && (
+        <div className="w-7 h-7 rounded-full aurora-gradient flex items-center justify-center shrink-0 mt-1">
+          <Sparkles size={14} className="text-white" />
+        </div>
+      )}
       <div className="max-w-[70%]">
         <div
-          className={`rounded-2xl px-4 py-3 ${
+          className={`rounded-2xl px-4 py-3 shadow-sm ${
             isUser ? "aurora-gradient text-white whitespace-pre-wrap" : "border"
           }`}
           style={
