@@ -35,3 +35,15 @@
   background-clip: text;
   color: transparent;
 }
+
+/* Faz o texto em Markdown (respostas da IA) seguir a cor do tema,
+   em vez das cores cinzas padrão do plugin Typography. */
+.prose {
+  --tw-prose-body: var(--text-primary);
+  --tw-prose-headings: var(--text-primary);
+  --tw-prose-bold: var(--text-primary);
+  --tw-prose-links: var(--color-aurora-blue);
+  --tw-prose-code: var(--text-primary);
+  --tw-prose-bullets: var(--text-primary);
+  --tw-prose-quotes: var(--text-primary);
+}
