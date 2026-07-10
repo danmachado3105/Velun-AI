@@ -12,11 +12,13 @@ Construído do zero como projeto de portfólio, aplicando arquitetura em camadas
 
 ## 📸 Demonstração
 
-![Demonstração do Velun AI](./docs/screenshots/Demonstração.mp4)
-
 | Modo escuro | Modo claro |
 |---|---|
-| <img width="395" height="245" alt="Captura de tela 2026-07-08 224738" src="https://github.com/user-attachments/assets/4153d629-24c7-475b-95bf-e474baa6ab49" /> | <img width="395" height="245" alt="Captura de tela 2026-07-08 224753" src="https://github.com/user-attachments/assets/3373d3c4-c0f5-4152-a606-d90a8369e115" /> |
+| <img width="395" height="245" alt="Captura de tela 2026-07-09 212226" src="https://github.com/user-attachments/assets/c7f89b02-6a78-415c-a702-9adc016b0e65" /> | <img width="395" height="245" alt="Captura de tela 2026-07-09 212244" src="https://github.com/user-attachments/assets/5d6a7d73-370a-41d2-a768-3969ec12e9c3" /> |
+|||
+| <img width="395" height="245" alt="Captura de tela 2026-07-09 212700" src="https://github.com/user-attachments/assets/aa527aff-3df4-4e75-be48-249c0f16d96c" /> | <img width="395" height="245" alt="Captura de tela 2026-07-09 212722" src="https://github.com/user-attachments/assets/10ec14ad-fc61-46d5-8f74-aa7ec0b6890d" /> |
+
+
 ---
 
 ## ✨ Funcionalidades
