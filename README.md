@@ -12,6 +12,8 @@ Construído do zero como projeto de portfólio, aplicando arquitetura em camadas
 
 ## 📸 Demonstração
 
+![Demonstração do Velun AI](./docs/screenshots/demo.gif.mp4)
+
 | Modo escuro | Modo claro |
 |---|---|
 | <img width="395" height="245" alt="Captura de tela 2026-07-08 224738" src="https://github.com/user-attachments/assets/4153d629-24c7-475b-95bf-e474baa6ab49" /> | <img width="395" height="245" alt="Captura de tela 2026-07-08 224753" src="https://github.com/user-attachments/assets/3373d3c4-c0f5-4152-a606-d90a8369e115" /> |
@@ -70,7 +72,10 @@ A memória de longo prazo usa uma abordagem de **RAG (Retrieval-Augmented Genera
 - [Python 3.11+](https://www.python.org/)
 - [Node.js LTS](https://nodejs.org/)
 - [Ollama](https://ollama.com/) instalado e rodando
-- Um modelo baixado no Ollama, ex: `ollama pull qwen2.5:1.5b`
+- Um modelo de chat baixado no Ollama, ex: `ollama pull qwen2.5:7b`
+- Um modelo de embeddings, usado para a memória semântica: `ollama pull nomic-embed-text`
+
+> 💡 **Sobre o modelo:** o projeto funciona com qualquer modelo do Ollama, bastando configurar `OLLAMA_MODEL` no `.env`. Modelos menores (`qwen2.5:1.5b`) rodam em qualquer hardware, mas com respostas mais simples; modelos maiores (`qwen2.5:7b` ou superiores) entregam respostas de qualidade bem melhor, exigindo mais poder de processamento.
 
 ### Backend
 
