@@ -12,7 +12,7 @@ Construído do zero como projeto de portfólio, aplicando arquitetura em camadas
 
 ## 📸 Demonstração
 
-![Demonstração do Velun AI](./docs/screenshots/demo.gif.mp4)
+![Demonstração do Velun AI](./docs/screenshots/Demonstração.mp4)
 
 | Modo escuro | Modo claro |
 |---|---|
